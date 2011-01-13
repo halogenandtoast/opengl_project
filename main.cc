@@ -97,32 +97,43 @@ GLuint create_shader(GLenum shader_type, const std::string &source)
 }
 
 void load_matrices() {
+
   projection_matrix[ 0] = 1; projection_matrix[ 1] = 0;
   projection_matrix[ 2] = 0; projection_matrix[ 3] = 0;
+
   projection_matrix[ 4] = 0; projection_matrix[ 5] = 1;
   projection_matrix[ 6] = 0; projection_matrix[ 7] = 0;
+
   projection_matrix[ 8] = 0; projection_matrix[ 9] = 0;
   projection_matrix[10] = 1; projection_matrix[11] = 0;
+
   projection_matrix[12] = 0; projection_matrix[13] = 0;
   projection_matrix[14] = 0; projection_matrix[15] = 1;
 
-  view_matrix[ 0] = 1; view_matrix[ 1] = 0; view_matrix[ 2] = 0;
-  view_matrix[ 3] = 0;
-  view_matrix[ 4] = 0; view_matrix[ 5] = 1; view_matrix[ 6] = 0;
-  view_matrix[ 7] = 0;
-  view_matrix[ 8] = 0; view_matrix[ 9] = 0; view_matrix[10] = 1;
-  view_matrix[11] = 0;
-  view_matrix[12] = 0; view_matrix[13] = 0; view_matrix[14] = 0;
-  view_matrix[15] = 1;
+  view_matrix[ 0] = 1; view_matrix[ 1] = 0;
+  view_matrix[ 2] = 0; view_matrix[ 3] = 0;
 
-  model_matrix[ 0] = 1; model_matrix[ 1] = 0; model_matrix[ 2] = 0;
-  model_matrix[ 3] = 0;
-  model_matrix[ 4] = 0; model_matrix[ 5] = 1; model_matrix[ 6] = 0;
-  model_matrix[ 7] = 0;
-  model_matrix[ 8] = 0; model_matrix[ 9] = 0; model_matrix[10] = 1;
-  model_matrix[11] = 0;
-  model_matrix[12] = 0; model_matrix[13] = 0; model_matrix[14] = 0;
-  model_matrix[15] = 1;
+  view_matrix[ 4] = 0; view_matrix[ 5] = 1;
+  view_matrix[ 6] = 0; view_matrix[ 7] = 0;
+
+  view_matrix[ 8] = 0; view_matrix[ 9] = 0;
+  view_matrix[10] = 1; view_matrix[11] = 0;
+
+  view_matrix[12] = 0; view_matrix[13] = 0;
+  view_matrix[14] = 0; view_matrix[15] = 1;
+
+  model_matrix[ 0] = 1; model_matrix[ 1] = 0;
+  model_matrix[ 2] = 0; model_matrix[ 3] = 0;
+
+  model_matrix[ 4] = 0; model_matrix[ 5] = 1;
+  model_matrix[ 6] = 0; model_matrix[ 7] = 0;
+
+  model_matrix[ 8] = 0; model_matrix[ 9] = 0;
+  model_matrix[10] = 1; model_matrix[11] = 0;
+
+  model_matrix[12] = 0; model_matrix[13] = 0;
+  model_matrix[14] = 0; model_matrix[15] = 1;
+
 }
 
 void init()
