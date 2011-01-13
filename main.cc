@@ -7,9 +7,9 @@
 
 const std::string strVertexShader(
     "#version 120\n"
-    "mat4 projection_matrix;\n"
-    "mat4 model_matrix;\n"
-    "mat4 view_matrix;\n"
+    "uniform mat4 projection_matrix;\n"
+    "uniform mat4 model_matrix;\n"
+    "uniform mat4 view_matrix;\n"
     "attribute vec3 position;\n"
     "void main()\n"
     "{\n"
@@ -52,6 +52,10 @@ void display(void) {
   glDrawArrays(GL_TRIANGLES, 0, 3);
   glDisableVertexAttribArray(0);
   glUseProgram(0);
+
+  if(glGetError() != GL_NO_ERROR) {
+    fprintf(stderr, "%s", gluErrorString(glGetError()));
+  }
 
   glutSwapBuffers();
 }
