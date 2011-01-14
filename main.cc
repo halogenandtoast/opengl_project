@@ -5,31 +5,10 @@
   #include <GLUT/glut.h>
 #endif
 
-const std::string strVertexShader(
-    "#version 120\n"
-    "uniform mat4 projection_matrix;\n"
-    "uniform mat4 model_matrix;\n"
-    "uniform mat4 view_matrix;\n"
-    "attribute vec3 position;\n"
-    "void main()\n"
-    "{\n"
-    "  gl_Position = projection_matrix * model_matrix * view_matrix * vec4(position, 1.0);\n"
-    "}\n"
-);
-
-const std::string strFragmentShader(
-    "#version 120\n"
-    "void main()\n"
-    "{\n"
-    "  gl_FragColor = vec4(1.0f, 0.0f, 1.0f, 1.0f);\n"
-    "}\n"
-);
-
 static GLuint program;
 static GLuint buffer_object;
 static GLfloat projection_matrix[16];
-static GLfloat view_matrix[16];
-static GLfloat model_matrix[16];
+static GLfloat model_view_matrix[16];
 
 static const float vertexPositions[] = {
   0.75f, 0.75f, 0.0f, 1.0f,
@@ -43,12 +22,11 @@ void display(void) {
   glUseProgram(program);
 
   glUniformMatrix4fv( glGetUniformLocation( program, "projection_matrix" ), 1, GL_FALSE, projection_matrix );
-  glUniformMatrix4fv( glGetUniformLocation( program, "view_matrix" ), 1, GL_FALSE, view_matrix );
-  glUniformMatrix4fv( glGetUniformLocation( program, "model_matrix" ), 1, GL_FALSE, model_matrix );
+  glUniformMatrix4fv( glGetUniformLocation( program, "model_view_matrix" ), 1, GL_FALSE, model_view_matrix );
 
   glBindBuffer(GL_ARRAY_BUFFER, buffer_object);
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer( glGetAttribLocation(program, "position"), 4, GL_FLOAT, GL_FALSE, 0, 0);
+  glVertexAttribPointer( glGetAttribLocation(program, "vertex"), 4, GL_FLOAT, GL_FALSE, 0, 0);
   glDrawArrays(GL_TRIANGLES, 0, 3);
   glDisableVertexAttribArray(0);
   glUseProgram(0);
@@ -68,11 +46,22 @@ void idle(void) {
   glutPostRedisplay();
 }
 
-GLuint create_shader(GLenum shader_type, const std::string &source)
+GLuint create_shader(GLenum shader_type, const char* source_file)
 {
   GLuint shader = glCreateShader(shader_type);
-  const char *shader_code = source.c_str();
-  glShaderSource(shader, 1, &shader_code, NULL);
+  GLchar *source;
+  GLint filesize;
+
+  FILE *file = fopen(source_file, "r");
+  fseek(file, 0, SEEK_END);
+  filesize = ftell(file);
+  fseek(file, 0, SEEK_SET);
+  source = (GLchar *)malloc(sizeof(GLchar)*(filesize+1));
+  fread(source, 1, filesize, file);
+  fclose(file);
+  source[filesize] = '\0';
+
+  glShaderSource(shader, 1, (const GLchar **)&source, NULL);
   glCompileShader(shader);
 
   GLint status;
@@ -110,37 +99,25 @@ void load_matrices() {
   projection_matrix[12] = 0; projection_matrix[13] = 0;
   projection_matrix[14] = 0; projection_matrix[15] = 1;
 
-  view_matrix[ 0] = 1; view_matrix[ 1] = 0;
-  view_matrix[ 2] = 0; view_matrix[ 3] = 0;
+  model_view_matrix[ 0] = 1; model_view_matrix[ 1] = 0;
+  model_view_matrix[ 2] = 0; model_view_matrix[ 3] = 0;
 
-  view_matrix[ 4] = 0; view_matrix[ 5] = 1;
-  view_matrix[ 6] = 0; view_matrix[ 7] = 0;
+  model_view_matrix[ 4] = 0; model_view_matrix[ 5] = 1;
+  model_view_matrix[ 6] = 0; model_view_matrix[ 7] = 0;
 
-  view_matrix[ 8] = 0; view_matrix[ 9] = 0;
-  view_matrix[10] = 1; view_matrix[11] = 0;
+  model_view_matrix[ 8] = 0; model_view_matrix[ 9] = 0;
+  model_view_matrix[10] = 1; model_view_matrix[11] = 0;
 
-  view_matrix[12] = 0; view_matrix[13] = 0;
-  view_matrix[14] = 0; view_matrix[15] = 1;
-
-  model_matrix[ 0] = 1; model_matrix[ 1] = 0;
-  model_matrix[ 2] = 0; model_matrix[ 3] = 0;
-
-  model_matrix[ 4] = 0; model_matrix[ 5] = 1;
-  model_matrix[ 6] = 0; model_matrix[ 7] = 0;
-
-  model_matrix[ 8] = 0; model_matrix[ 9] = 0;
-  model_matrix[10] = 1; model_matrix[11] = 0;
-
-  model_matrix[12] = 0; model_matrix[13] = 0;
-  model_matrix[14] = 0; model_matrix[15] = 1;
+  model_view_matrix[12] = 0; model_view_matrix[13] = 0;
+  model_view_matrix[14] = 0; model_view_matrix[15] = 1;
 
 }
 
 void init()
 {
   load_matrices();
-  GLuint vertex_shader = create_shader(GL_VERTEX_SHADER, strVertexShader);
-  GLuint fragment_shader = create_shader(GL_FRAGMENT_SHADER, strFragmentShader);
+  GLuint vertex_shader = create_shader(GL_VERTEX_SHADER, "shaders/main.v.glsl");
+  GLuint fragment_shader = create_shader(GL_FRAGMENT_SHADER, "shaders/main.f.glsl");
 
   program = glCreateProgram();
   glAttachShader(program, vertex_shader);
