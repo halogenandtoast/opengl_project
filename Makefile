@@ -2,7 +2,7 @@ SRC = main.cc
 OBJ = ${SRC:.cc=.o}
 
 CC = g++
-FRAMEWORKS = -framework GLUT -framework OpenGL
+FRAMEWORKS = -framework GLUT -framework OpenGL -lGLEW
 
 all: umog
 

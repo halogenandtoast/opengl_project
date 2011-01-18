@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 
+#include <GL/glew.h>
 #ifdef __APPLE__
   #include <GLUT/glut.h>
 #endif
@@ -18,13 +19,10 @@ static const float vertexPositions[] = {
 
 void display(void) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
   glUseProgram(program);
-
   glUniformMatrix4fv( glGetUniformLocation( program, "projection_matrix" ), 1, GL_FALSE, projection_matrix );
   glUniformMatrix4fv( glGetUniformLocation( program, "model_view_matrix" ), 1, GL_FALSE, model_view_matrix );
-
-  glBindBuffer(GL_ARRAY_BUFFER, buffer_object);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer_object); // bind buffer
   glEnableVertexAttribArray(0);
   glVertexAttribPointer( glGetAttribLocation(program, "vertex"), 4, GL_FLOAT, GL_FALSE, 0, 0);
   glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -113,21 +111,24 @@ void load_matrices() {
 
 }
 
+void make_program(GLint vertex_shader, GLint fragment_shader) {
+  program = glCreateProgram();
+  glAttachShader(program, vertex_shader);
+  glAttachShader(program, fragment_shader);
+  glLinkProgram(program);
+}
+
 void init()
 {
   load_matrices();
   GLuint vertex_shader = create_shader(GL_VERTEX_SHADER, "shaders/main.v.glsl");
   GLuint fragment_shader = create_shader(GL_FRAGMENT_SHADER, "shaders/main.f.glsl");
+  make_program(vertex_shader, fragment_shader);
 
-  program = glCreateProgram();
-  glAttachShader(program, vertex_shader);
-  glAttachShader(program, fragment_shader);
-  glLinkProgram(program);
-
-  glGenBuffers(1, &buffer_object);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer_object);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glGenBuffers(1, &buffer_object); // create a bugger
+  glBindBuffer(GL_ARRAY_BUFFER, buffer_object); //specify a type
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW); // allocated memory
+  glBindBuffer(GL_ARRAY_BUFFER, 0); // rebind
 
 }
 
@@ -138,6 +139,15 @@ int main(int argc, char *argv[]) {
   glutInitWindowSize(640, 480);
 
   glutCreateWindow("UMOG");
+
+  glewInit();
+  if (GLEW_VERSION_2_1) {
+    printf("OpenGL 2.1 supported");
+  }
+
+  if(glewIsSupported("GL_EXT_gpu_shader4")) {
+    printf("WOOT");
+  }
 
   glutDisplayFunc(display);
   glutIdleFunc(idle);
