@@ -141,13 +141,6 @@ int main(int argc, char *argv[]) {
   glutCreateWindow("UMOG");
 
   glewInit();
-  if (GLEW_VERSION_2_1) {
-    printf("OpenGL 2.1 supported");
-  }
-
-  if(glewIsSupported("GL_EXT_gpu_shader4")) {
-    printf("WOOT");
-  }
 
   glutDisplayFunc(display);
   glutIdleFunc(idle);
