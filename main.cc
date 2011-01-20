@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <math.h>
 
 #include <GL/glew.h>
 #ifdef __APPLE__
@@ -8,23 +9,49 @@
   #include <GL/glut.h>
 #endif
 
+#include "vector4.h"
+#include "matrix4.h"
+#define WIDTH 640
+#define HEIGHT 480
+#define PI 3.1415926535897932384626433832f;
+
+inline float degtorad(float deg) {
+  return deg/180.0f * PI;
+}
+
+inline Matrix4 perspective(float fov, float aspect, float near, float far) {
+  float y = 1.0f / tan(degtorad(fov) * 0.5f);
+  float x = y / aspect;
+  float z1 = (far + near) / (near - far);
+  float z2 = (2.0f * far * near) / (near - far);
+  Matrix4 m(Vector4(x, 0, 0, 0),
+            Vector4(0, y, 0, 0),
+            Vector4(0, 0, z1, z2),
+            Vector4(0, 0, -1, 0));
+  return m;
+}
+
+inline Matrix4 translate(const Vector4& offset) {
+  return Matrix4(
+      Vector4(1.0f, 0.0f, 0.0f, 0.0f),
+      Vector4(0.0f, 1.0f, 0.0f, 0.0f),
+      Vector4(0.0f, 0.0f, 1.0f, 0.0f),
+      Vector4(offset.x, offset.y, offset.z, offset.w)
+      );
+}
+
+class Camera{
+  public:
+    Matrix4 view;
+    Matrix4 projection;
+    Camera() { view.identity(); projection = perspective(45.0f, WIDTH/HEIGHT, 0.1f, 100.0f); };
+};
+
 class Demo{
   public:
+    Camera camera;
     GLuint program, buffer_object, vertex_shader, fragment_shader;
 } demo;
-
-static GLfloat projection_matrix[16] = {
-  1, 0, 0, 0,
-  0, 1, 0, 0,
-  0, 0, 1, 0,
-  0, 0, 0, 1
-};
-static GLfloat model_view_matrix[16] = {
-  1, 0, 0, 0,
-  0, 1, 0, 0,
-  0, 0, 1, 0,
-  0, 0, 0, 1
-};
 
 static const float vertexData[] = {
   0.75f, 0.75f, 0.0f, 1.0f,
@@ -32,11 +59,17 @@ static const float vertexData[] = {
   -0.75f, -0.75f, 0.0f, 1.0f
 };
 
+Matrix4 translation = translate(Vector4(0, 0, -10, 1));
+
 void display(void) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glUseProgram(demo.program);
-  glUniformMatrix4fv( glGetUniformLocation( demo.program, "projection_matrix" ), 1, GL_FALSE, projection_matrix );
-  glUniformMatrix4fv( glGetUniformLocation( demo.program, "model_view_matrix" ), 1, GL_FALSE, model_view_matrix );
+
+  Matrix4 model_view = translation * demo.camera.view;
+
+  glUniformMatrix4fv( glGetUniformLocation( demo.program, "projection_matrix" ), 1, GL_TRUE, demo.camera.projection.c_ptr() );
+  glUniformMatrix4fv( glGetUniformLocation( demo.program, "model_view_matrix" ), 1, GL_TRUE, model_view.c_ptr() );
+
   glBindBuffer(GL_ARRAY_BUFFER, demo.buffer_object); // bind buffer
   glEnableVertexAttribArray(0);
   glVertexAttribPointer( glGetAttribLocation(demo.program, "position"), 4, GL_FLOAT, GL_FALSE, 0, 0);

@@ -8,10 +8,10 @@ all: umog
 
 .cc.o:
 	@echo CC $<
-	@${CC} -c -o $@ $<
+	@${CC} -c -ggdb -o $@ $<
 
 umog: ${OBJ}
-	@${CC} ${FRAMEWORKS} ${OBJ} -o umog
+	@${CC} ${FRAMEWORKS} ${OBJ} -ggdb -o umog
 
 clean:
 	@echo cleaning
