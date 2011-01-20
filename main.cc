@@ -8,12 +8,25 @@
   #include <GL/glut.h>
 #endif
 
-static GLuint program;
-static GLuint buffer_object;
-static GLfloat projection_matrix[16];
-static GLfloat model_view_matrix[16];
+class Demo{
+  public:
+    GLuint program, buffer_object, vertex_shader, fragment_shader;
+} demo;
 
-static const float vertexPositions[] = {
+static GLfloat projection_matrix[16] = {
+  1, 0, 0, 0,
+  0, 1, 0, 0,
+  0, 0, 1, 0,
+  0, 0, 0, 1
+};
+static GLfloat model_view_matrix[16] = {
+  1, 0, 0, 0,
+  0, 1, 0, 0,
+  0, 0, 1, 0,
+  0, 0, 0, 1
+};
+
+static const float vertexData[] = {
   0.75f, 0.75f, 0.0f, 1.0f,
   0.75f, -0.75f, 0.0f, 1.0f,
   -0.75f, -0.75f, 0.0f, 1.0f
@@ -21,12 +34,12 @@ static const float vertexPositions[] = {
 
 void display(void) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glUseProgram(program);
-  glUniformMatrix4fv( glGetUniformLocation( program, "projection_matrix" ), 1, GL_FALSE, projection_matrix );
-  glUniformMatrix4fv( glGetUniformLocation( program, "model_view_matrix" ), 1, GL_FALSE, model_view_matrix );
-  glBindBuffer(GL_ARRAY_BUFFER, buffer_object); // bind buffer
+  glUseProgram(demo.program);
+  glUniformMatrix4fv( glGetUniformLocation( demo.program, "projection_matrix" ), 1, GL_FALSE, projection_matrix );
+  glUniformMatrix4fv( glGetUniformLocation( demo.program, "model_view_matrix" ), 1, GL_FALSE, model_view_matrix );
+  glBindBuffer(GL_ARRAY_BUFFER, demo.buffer_object); // bind buffer
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer( glGetAttribLocation(program, "vertex"), 4, GL_FLOAT, GL_FALSE, 0, 0);
+  glVertexAttribPointer( glGetAttribLocation(demo.program, "position"), 4, GL_FLOAT, GL_FALSE, 0, 0);
   glDrawArrays(GL_TRIANGLES, 0, 3);
   glDisableVertexAttribArray(0);
   glUseProgram(0);
@@ -85,52 +98,23 @@ GLuint create_shader(GLenum shader_type, const char* source_file)
   return shader;
 }
 
-void load_matrices() {
-
-  projection_matrix[ 0] = 1; projection_matrix[ 1] = 0;
-  projection_matrix[ 2] = 0; projection_matrix[ 3] = 0;
-
-  projection_matrix[ 4] = 0; projection_matrix[ 5] = 1;
-  projection_matrix[ 6] = 0; projection_matrix[ 7] = 0;
-
-  projection_matrix[ 8] = 0; projection_matrix[ 9] = 0;
-  projection_matrix[10] = 1; projection_matrix[11] = 0;
-
-  projection_matrix[12] = 0; projection_matrix[13] = 0;
-  projection_matrix[14] = 0; projection_matrix[15] = 1;
-
-  model_view_matrix[ 0] = 1; model_view_matrix[ 1] = 0;
-  model_view_matrix[ 2] = 0; model_view_matrix[ 3] = 0;
-
-  model_view_matrix[ 4] = 0; model_view_matrix[ 5] = 1;
-  model_view_matrix[ 6] = 0; model_view_matrix[ 7] = 0;
-
-  model_view_matrix[ 8] = 0; model_view_matrix[ 9] = 0;
-  model_view_matrix[10] = 1; model_view_matrix[11] = 0;
-
-  model_view_matrix[12] = 0; model_view_matrix[13] = 0;
-  model_view_matrix[14] = 0; model_view_matrix[15] = 1;
-
-}
-
 void make_program(GLint vertex_shader, GLint fragment_shader) {
-  program = glCreateProgram();
-  glAttachShader(program, vertex_shader);
-  glAttachShader(program, fragment_shader);
-  glLinkProgram(program);
+  demo.program = glCreateProgram();
+  glAttachShader(demo.program, vertex_shader);
+  glAttachShader(demo.program, fragment_shader);
+  glLinkProgram(demo.program);
 }
 
 void init()
 {
-  load_matrices();
   GLuint vertex_shader = create_shader(GL_VERTEX_SHADER, "shaders/main.v.glsl");
   GLuint fragment_shader = create_shader(GL_FRAGMENT_SHADER, "shaders/main.f.glsl");
   make_program(vertex_shader, fragment_shader);
 
-  glGenBuffers(1, &buffer_object); // create a bugger
-  glBindBuffer(GL_ARRAY_BUFFER, buffer_object); //specify a type
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW); // allocated memory
-  glBindBuffer(GL_ARRAY_BUFFER, 0); // rebind
+  glGenBuffers(1, &demo.buffer_object);
+  glBindBuffer(GL_ARRAY_BUFFER, demo.buffer_object);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }
 
