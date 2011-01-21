@@ -33,10 +33,10 @@ inline Matrix4 perspective(float fov, float aspect, float near, float far) {
 
 inline Matrix4 translate(const Vector4& offset) {
   return Matrix4(
-      Vector4(1.0f, 0.0f, 0.0f, 0.0f),
-      Vector4(0.0f, 1.0f, 0.0f, 0.0f),
-      Vector4(0.0f, 0.0f, 1.0f, 0.0f),
-      Vector4(offset.x, offset.y, offset.z, offset.w)
+      Vector4(1.0f, 0.0f, 0.0f, offset.x),
+      Vector4(0.0f, 1.0f, 0.0f, offset.y),
+      Vector4(0.0f, 0.0f, 1.0f, offset.z),
+      Vector4(0.0f, 0.0f, 0.0f, offset.w)
       );
 }
 
@@ -59,7 +59,7 @@ static const float vertexData[] = {
   -0.75f, -0.75f, 0.0f, 1.0f
 };
 
-Matrix4 translation = translate(Vector4(0, 0, -10, 1));
+Matrix4 translation = translate(Vector4(0, 0, -5, 1));
 
 void display(void) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

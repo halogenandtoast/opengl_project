@@ -34,6 +34,7 @@ struct Matrix4 {
         }
       }
     }
+    return result;
   }
 
 };
