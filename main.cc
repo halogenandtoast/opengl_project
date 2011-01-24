@@ -15,6 +15,8 @@
 #define HEIGHT 480
 #define PI 3.1415926535897932384626433832f;
 
+int keys[256];
+
 inline float degtorad(float deg) {
   return deg/180.0f * PI;
 }
@@ -42,10 +44,16 @@ inline Matrix4 translate(const Vector4& offset) {
 
 class Camera{
   public:
-    Matrix4 view;
+    GLfloat x, y, z;
     Matrix4 projection;
-    Camera() { view.identity(); projection = perspective(45.0f, WIDTH/HEIGHT, 0.1f, 100.0f); };
+    Camera() { x = 0; y = 0; z = -10.0; projection = perspective(45.0f, WIDTH/HEIGHT, 0.1f, 100.0f); };
+    Matrix4 view();
 };
+
+Matrix4 Camera::view() {
+  Matrix4 view = Matrix4(Vector4(1,0,0,x), Vector4(0,1,0,y), Vector4(0,0,1,z), Vector4(0,0,0,1));
+  return view;
+}
 
 class Demo{
   public:
@@ -59,13 +67,26 @@ static const float vertexData[] = {
   -0.75f, -0.75f, 0.0f, 1.0f
 };
 
-Matrix4 translation = translate(Vector4(0, 0, -5, 1));
+void update_camera() {
+  if(keys[GLUT_KEY_LEFT] == 1) {
+    demo.camera.x -= 0.1;
+  } else if (keys[GLUT_KEY_RIGHT] == 1) {
+    demo.camera.x += 0.1;
+  }
+  if(keys[GLUT_KEY_UP] == 1) {
+    demo.camera.z -= 0.1;
+  } else if (keys[GLUT_KEY_DOWN] == 1) {
+    demo.camera.z += 0.1;
+  }
+}
+
 
 void display(void) {
+  update_camera();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glUseProgram(demo.program);
 
-  Matrix4 model_view = translation * demo.camera.view;
+  Matrix4 model_view = demo.camera.view();
 
   glUniformMatrix4fv( glGetUniformLocation( demo.program, "projection_matrix" ), 1, GL_TRUE, demo.camera.projection.c_ptr() );
   glUniformMatrix4fv( glGetUniformLocation( demo.program, "model_view_matrix" ), 1, GL_TRUE, model_view.c_ptr() );
@@ -138,6 +159,40 @@ void make_program(GLint vertex_shader, GLint fragment_shader) {
   glLinkProgram(demo.program);
 }
 
+void keyboard(unsigned char key, int x, int y) {
+}
+
+void special(int key, int x, int y) {
+  if(key == GLUT_KEY_LEFT) {
+    keys[GLUT_KEY_LEFT] = 1;
+  }
+  if(key == GLUT_KEY_RIGHT) {
+    keys[GLUT_KEY_RIGHT] = 1;
+  }
+  if(key == GLUT_KEY_UP) {
+    keys[GLUT_KEY_UP] = 1;
+  }
+  if(key == GLUT_KEY_DOWN) {
+    keys[GLUT_KEY_DOWN] = 1;
+  }
+}
+
+void specialUp(int key, int x, int y) {
+  if(key == GLUT_KEY_LEFT) {
+    keys[GLUT_KEY_LEFT] = 0;
+  }
+  if(key == GLUT_KEY_RIGHT) {
+    keys[GLUT_KEY_RIGHT] = 0;
+  }
+  if(key == GLUT_KEY_UP) {
+    keys[GLUT_KEY_UP] = 0;
+  }
+  if(key == GLUT_KEY_DOWN) {
+    keys[GLUT_KEY_DOWN] = 0;
+  }
+
+}
+
 void init()
 {
   GLuint vertex_shader = create_shader(GL_VERTEX_SHADER, "shaders/main.v.glsl");
@@ -164,6 +219,9 @@ int main(int argc, char *argv[]) {
   glutDisplayFunc(display);
   glutIdleFunc(idle);
   glutReshapeFunc(reshape);
+  glutKeyboardFunc(keyboard);
+  glutSpecialFunc(special);
+  glutSpecialUpFunc(specialUp);
 
   init();
 
